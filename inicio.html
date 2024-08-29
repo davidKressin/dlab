@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tablero de Colores</title>
+    <style>
+        body {
+            font-family: 'Helvetica Neue', Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #e0e5ec;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+        }
+        .navbar {
+            background-color: #004c6d;
+            width: 100%;
+            padding: 15px 0;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            position: fixed;
+            top: 0;
+            left: 0;
+            z-index: 1000;
+        }
+        .navbar a {
+            color: #f2f2f2;
+            text-align: center;
+            text-decoration: none;
+            margin: 0 20px;
+            font-size: 18px;
+            padding: 8px 16px;
+            border-radius: 5px;
+            transition: background-color 0.3s ease;
+        }
+        .navbar a:hover {
+            background-color: #007c99;
+        }
+        .logo-container {
+            margin-top: 100px;
+            margin-bottom: 20px;
+        }
+        .logo-container img {
+            width: 150px;
+            transition: transform 0.3s ease;
+        }
+        .logo-container img:hover {
+            transform: scale(1.1);
+        }
+        .board {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            padding: 20px;
+            background-color: #fff;
+            border-radius: 15px;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+        }
+        .rectangle-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            transition: transform 0.3s ease;
+        }
+        .rectangle-container:hover {
+            transform: translateY(-10px);
+        }
+        .rectangle {
+            width: 100px;
+            height: 100px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            font-size: 20px;
+            font-weight: bold;
+            border-radius: 10px;
+            transition: background-color 0.5s ease, opacity 0.5s ease;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        }
+        #rect1 { background-color: #e74c3c; } /* Rojo */
+        #rect2 { background-color: #f1c40f; color: black; } /* Amarillo */
+        #rect3 { background-color: #2ecc71; } /* Verde */
+        #rect4 { background-color: #f1c40f; color: black; } /* Amarillo */
+        #rect5 { background-color: #3498db; } /* Azul */
+        .label {
+            margin-top: 10px;
+            font-size: 16px;
+            font-weight: bold;
+            text-transform: uppercase;
+            color: #333;
+        }
+    </style>
+</head>
+<body>
+    <div class="navbar">
+        <a href="inicio.html">Inicio</a>
+        <a href="about.html">Acerca de</a>
+    </div>
+
+    <div class="logo-container">
+        <img src="image.png" alt="Logo">
+    </div>
+
+    <div class="board">
+        <div class="rectangle-container">
+            <div class="rectangle" id="rect1"></div>
+            <div class="label">Seco</div>
+        </div>
+        <div class="rectangle-container">
+            <div class="rectangle" id="rect2"></div>
+            <div class="label">Precaución</div>
+        </div>
+        <div class="rectangle-container">
+            <div class="rectangle" id="rect3"></div>
+            <div class="label">Óptimo</div>
+        </div>
+        <div class="rectangle-container">
+            <div class="rectangle" id="rect4"></div>
+            <div class="label">Precaución</div>
+        </div>
+        <div class="rectangle-container">
+            <div class="rectangle" id="rect5"></div>
+            <div class="label">Mojado</div>
+        </div>
+    </div>
+
+    <script type="module">
+        // Importar las funciones necesarias del SDK
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-app.js";
+        import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-database.js";
+
+        // Tu configuración de Firebase
+        const firebaseConfig = {
+          apiKey: "AIzaSyCV2qi8nFUaH0hmLUfFR8S67Mlf8u9dtQs",
+          authDomain: "sensorestid.firebaseapp.com",
+          databaseURL: "https://sensorestid-default-rtdb.firebaseio.com",
+          projectId: "sensorestid",
+          storageBucket: "sensorestid.appspot.com",
+          messagingSenderId: "213960222306",
+          appId: "1:213960222306:web:7dfd31db974a0a3fc4933b",
+          measurementId: "G-C8QV2NM0BE"
+        };
+      
+        // Inicializar Firebase
+        const app = initializeApp(firebaseConfig);
+        const database = getDatabase(app);
+
+        // Referencia a la ruta en la base de datos
+        const dbRef = ref(database, 'don_pancho/registros/ultimo/sensor_1/porcentaje');
+
+        // Escuchar cambios en la base de datos
+        onValue(dbRef, (snapshot) => {
+            const data = snapshot.val();
+
+            const rectangles = document.querySelectorAll('.rectangle');
+            rectangles.forEach((rect, index) => {
+                rect.style.opacity = '0.5';
+                rect.textContent = '';
+            });
+
+            let selectedRect;
+
+            if (data <= 35) {
+                selectedRect = document.getElementById('rect1');
+            } else if (data <= 55) {
+                selectedRect = document.getElementById('rect2');
+            } else if (data <= 70) {
+                selectedRect = document.getElementById('rect3');
+            } else if (data <= 80) {
+                selectedRect = document.getElementById('rect4');
+            } else {
+                selectedRect = document.getElementById('rect5');
+            }
+
+            selectedRect.style.opacity = '1';
+            selectedRect.textContent = data + '%';
+        });
+    </script>
+</body>
+</html>
